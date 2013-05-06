@@ -13,7 +13,7 @@ def load_image(name, colorkey=None):
     except pygame.error:
         print('Cannot load image:', fullname)
         raise SystemExit(str(geterror()))
-    image = image.conver()
+    image = image.convert()
     if colorkey is not None:
         if colorkey is -1:
             colorkey = image.get_at((0,0))
@@ -24,9 +24,31 @@ class Player(pygame.sprite.Sprite):
     """Player object when platforming"""
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
+        self.walkingLeft, self.walkingRight = self.loadAnimations('BoyKnight.png')
+        self.frame = 0
+        self.rect = pygame.Rect(0,0,32,32)
 
     def update(self):
         "Move character, check collisions with platforms, gravity"
+        self.image = self.walkingRight[self.frame]
+        self.frame = not self.frame
+
+    def loadAnimations(self, filename):
+        walkingRight = []
+        walkingLeft = []
+
+        master_image, master_rect = load_image(filename)
+
+        print type(master_image)
+
+        walkingLeft.append(master_image.subsurface((0,64),(32,32)))
+        walkingLeft.append(master_image.subsurface((32,64,32,32)))
+
+        walkingRight.append(master_image.subsurface((0,96,32,32)))
+        walkingRight.append(master_image.subsurface((32,96,32,32)))
+
+        return walkingLeft, walkingRight
+                           
 
 class Platform:
     """ Platforms for getting higher. Container for a Surface and rect"""
@@ -51,6 +73,29 @@ def main():
     screen.blit(background, (0,0))
     screen.blit(ground.visualPlatform, ground.hitBox.topleft)
     pygame.display.flip()
+
+    player = Player()
+
+    allsprites = pygame.sprite.Group()
+
+    allsprites.add(player)
+
+    clock = pygame.time.Clock()
+
+    while True:
+        clock.tick(60)
+        for event in pygame.event.get():
+            if event.type == QUIT:
+                pygame.quit()
+            elif event.type == KEYDOWN and event.key == K_ESCAPE:
+                pygame.quit()
+
+        screen.blit(background, (0,0))
+        screen.blit(ground.visualPlatform, ground.hitBox.topleft)
+
+        allsprites.update()
+        allsprites.draw(screen)
+        pygame.display.flip()
 
 if __name__ == '__main__':
     main()
