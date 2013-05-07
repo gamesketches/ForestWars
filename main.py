@@ -6,6 +6,7 @@ data_dir = os.path.join(main_dir, 'data')
 
 platformListing = []
 TERMINALVELOCITY = 2
+TERMINALHORIZONTALVELOCITY = 5
 
 def load_image(name, colorkey=None):
     fullname = os.path.join(data_dir, name)
@@ -35,13 +36,23 @@ class Player(pygame.sprite.Sprite):
         "Move character, check collisions with platforms, gravity"
         self.image = self.walkingRight[self.frame]
         self.frame = not self.frame
+
+        # input handling
+        if pygame.key.get_pressed()[K_RIGHT] and self.velocity[0] < TERMINALHORIZONTALVELOCITY:
+            self.velocity[0] += 1
+        elif pygame.key.get_pressed()[K_LEFT] and self.velocity[0] > -TERMINALHORIZONTALVELOCITY:
+            self.velocity[0] += -1
+        elif pygame.key.get_pressed()[K_UP] and self.grounded:
+            self.velocity[1] += -20
+            self.grounded = False
+            
         if not self.grounded:
             if self.checkGrounded():
                 self.velocity[1] = 0
             else:
                 if self.velocity[1] <= TERMINALVELOCITY:
                     self.velocity[1] += 1
-                self.rect = self.rect.move((self.velocity[0],self.velocity[1]))
+        self.rect = self.rect.move((self.velocity[0],self.velocity[1]))
 
     def checkGrounded(self):
         for i in platformListing:
