@@ -7,6 +7,7 @@ data_dir = os.path.join(main_dir, 'data')
 platformListing = []
 TERMINALVELOCITY = 2
 TERMINALHORIZONTALVELOCITY = 5
+CURRENTSCREEN = "platformer"
 
 def load_image(name, colorkey=None):
     fullname = os.path.join(data_dir, name)
@@ -118,11 +119,14 @@ def main():
 
     screen.blit(background, (0,0))
 
+    global CURRENTSCREEN
+
     player = Player()
+    goal = Goal()
 
-    allsprites = pygame.sprite.Group()
+    goal.rect = goal.rect.move(200, 0)
 
-    allsprites.add(player)
+    allsprites = pygame.sprite.Group(player, goal)
 
     clock = pygame.time.Clock()
 
@@ -133,13 +137,20 @@ def main():
                 pygame.quit()
             elif event.type == KEYDOWN and event.key == K_ESCAPE:
                 pygame.quit()
+        if CURRENTSCREEN is "platformer":
+                
+            screen.blit(background, (0,0))
+            for i in platformListing:
+                screen.blit(i.visualPlatform, i.hitBox.topleft)
 
-        screen.blit(background, (0,0))
-        #screen.blit(ground.visualPlatform, ground.hitBox.topleft)
-        for i in platformListing:
-            screen.blit(i.visualPlatform, i.hitBox.topleft)
-        allsprites.update()
-        allsprites.draw(screen)
+            if player.rect.colliderect(goal.rect):
+                CURRENTSCREEN = "map"
+                
+            allsprites.update()
+            allsprites.draw(screen)
+        else:
+            background.fill((0,0,0))
+            screen.blit(background, (0,0))
         pygame.display.flip()
 
 if __name__ == '__main__':
