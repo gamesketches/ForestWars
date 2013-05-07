@@ -5,6 +5,7 @@ main_dir = os.path.split(os.path.abspath(sys.argv[0]))[0]
 data_dir = os.path.join(main_dir, 'data')
 
 platformListing = []
+TERMINALVELOCITY = 2
 
 def load_image(name, colorkey=None):
     fullname = os.path.join(data_dir, name)
@@ -27,11 +28,30 @@ class Player(pygame.sprite.Sprite):
         self.walkingLeft, self.walkingRight = self.loadAnimations('BoyKnight.png')
         self.frame = 0
         self.rect = pygame.Rect(0,0,32,32)
+        self.grounded = False
+        self.velocity = [0,0]
 
     def update(self):
         "Move character, check collisions with platforms, gravity"
         self.image = self.walkingRight[self.frame]
         self.frame = not self.frame
+        if not self.grounded:
+            if self.checkGrounded():
+                self.velocity[1] = 0
+            else:
+                if self.velocity[1] <= TERMINALVELOCITY:
+                    self.velocity[1] += 1
+                self.rect = self.rect.move((self.velocity[0],self.velocity[1]))
+
+    def checkGrounded(self):
+        for i in platformListing:
+            if i.hitBox.colliderect(self.rect.move(0,self.velocity[1])):
+                self.grounded = True
+                return True
+        else:
+            return False
+        
+            
 
     def loadAnimations(self, filename):
         walkingRight = []
