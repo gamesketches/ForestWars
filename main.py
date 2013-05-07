@@ -96,6 +96,12 @@ class Platform:
         self.hitBox = pygame.Rect(topLeft,(width,height))
         platformListing.append(self)
 
+class Goal(pygame.sprite.Sprite):
+    """ Goal rect for the platforming segments """
+    def __init__(self):
+        pygame.sprite.Sprite.__init__(self)
+        self.image, self.rect = load_image('Goal.png')
+
 def main():
     pygame.init()
     screen = pygame.display.set_mode((700,400))
@@ -107,9 +113,10 @@ def main():
 
     ground = Platform((0,350),700,50)
 
+    platform1 = Platform((400, 200), 300, 20)
+    platform2 = Platform((100, 100), 100, 20)
+
     screen.blit(background, (0,0))
-    screen.blit(ground.visualPlatform, ground.hitBox.topleft)
-    pygame.display.flip()
 
     player = Player()
 
@@ -128,8 +135,9 @@ def main():
                 pygame.quit()
 
         screen.blit(background, (0,0))
-        screen.blit(ground.visualPlatform, ground.hitBox.topleft)
-
+        #screen.blit(ground.visualPlatform, ground.hitBox.topleft)
+        for i in platformListing:
+            screen.blit(i.visualPlatform, i.hitBox.topleft)
         allsprites.update()
         allsprites.draw(screen)
         pygame.display.flip()
