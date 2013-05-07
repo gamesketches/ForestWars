@@ -52,6 +52,12 @@ class Player(pygame.sprite.Sprite):
             else:
                 if self.velocity[1] <= TERMINALVELOCITY:
                     self.velocity[1] += 1
+        else:
+            if self.velocity[0] > 0:
+                self.velocity[0] -= 0.3
+            else:
+                self.velocity[0] += 0.3
+                
         self.rect = self.rect.move((self.velocity[0],self.velocity[1]))
 
     def checkGrounded(self):
