@@ -54,6 +54,7 @@ class Player(pygame.sprite.Sprite):
                 if self.velocity[1] <= TERMINALVELOCITY:
                     self.velocity[1] += 1
         else:
+            self.checkGrounded()
             if self.velocity[0] > 0:
                 self.velocity[0] -= 0.3
             else:
@@ -66,8 +67,8 @@ class Player(pygame.sprite.Sprite):
             if i.hitBox.colliderect(self.rect.move(0,self.velocity[1])):
                 self.grounded = True
                 return True
-        else:
-            return False
+        self.grounded = False
+        return False
         
             
 
