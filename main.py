@@ -23,6 +23,29 @@ def load_image(name, colorkey=None):
         image.set_colorkey(colorkey, RLEACCEL)
     return image, image.get_rect()
 
+class mapNode(pygame.sprite.Sprite):
+    """Nodes on the map when in the strategy mode"""
+    def __init__(self):
+        pygame.sprite.Sprite.__init__(self)
+        self.selected = False
+        self.unselectedImage, self.rect = load_image("node.bmp")
+        self.selectedImage, self.rect = load_image("selectedNode.bmp")
+        self.images = [self.unselectedImage, self.selectedImage]
+        self.image = self.unselectedImage
+        self.mouseStatus = "unclicked"
+
+    def update(self):
+        "Check if selected, switch state accordingly"
+        for i in pygame.event.get():
+            if i.type == MOUSEBUTTONDOWN and self.mouseStatus is "unclicked":
+                if pygame.mouse.get_pressed()[0] == 1 and \
+                   self.rect.collidepoint(pygame.mouse.get_pos()):
+                    self.selected = not self.selected
+                    self.image = self.images[self.selected]
+                    self.mouseStatus = "beingClicked"
+            elif i.type == MOUSEBUTTONUP and self.mouseStatus is "beingClicked":
+                self.mouseStatus = "unclicked"
+
 class Player(pygame.sprite.Sprite):
     """Player object when platforming"""
     def __init__(self):
@@ -125,6 +148,10 @@ def main():
     player = Player()
     goal = Goal()
 
+    myNode = mapNode()
+
+    myNode.rect = myNode.rect.move(200,200)
+
     goal.rect = goal.rect.move(200, 0)
 
     allsprites = pygame.sprite.Group(player, goal)
@@ -146,12 +173,16 @@ def main():
 
             if player.rect.colliderect(goal.rect):
                 CURRENTSCREEN = "map"
+                allsprites.empty()
+                allsprites.add(myNode)
                 
             allsprites.update()
             allsprites.draw(screen)
         else:
             background.fill((0,0,0))
             screen.blit(background, (0,0))
+            allsprites.update()
+            allsprites.draw(screen)
         pygame.display.flip()
 
 if __name__ == '__main__':
