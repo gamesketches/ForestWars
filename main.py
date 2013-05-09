@@ -40,9 +40,14 @@ class mapNode(pygame.sprite.Sprite):
             if i.type == MOUSEBUTTONDOWN and self.mouseStatus is "unclicked":
                 if pygame.mouse.get_pressed()[0] == 1 and \
                    self.rect.collidepoint(pygame.mouse.get_pos()):
-                    self.selected = not self.selected
-                    self.image = self.images[self.selected]
-                    self.mouseStatus = "beingClicked"
+                    if not self.selected:
+                        self.selected = not self.selected
+                        self.image = self.images[self.selected]
+                        self.mouseStatus = "beingClicked"
+                    else:
+                        global CURRENTSCREEN
+                        CURRENTSCREEN = "switch"
+                        print "yo"
             elif i.type == MOUSEBUTTONUP and self.mouseStatus is "beingClicked":
                 self.mouseStatus = "unclicked"
 
@@ -166,23 +171,29 @@ def main():
             elif event.type == KEYDOWN and event.key == K_ESCAPE:
                 pygame.quit()
         if CURRENTSCREEN is "platformer":
-                
+            print "yoyo"
             screen.blit(background, (0,0))
             for i in platformListing:
                 screen.blit(i.visualPlatform, i.hitBox.topleft)
 
             if player.rect.colliderect(goal.rect):
                 CURRENTSCREEN = "map"
+                player.rect = player.rect.move((-100, 100))
                 allsprites.empty()
                 allsprites.add(myNode)
                 
             allsprites.update()
             allsprites.draw(screen)
-        else:
+        elif CURRENTSCREEN is "map":
             background.fill((0,0,0))
             screen.blit(background, (0,0))
             allsprites.update()
             allsprites.draw(screen)
+        elif CURRENTSCREEN is "switch":
+            background.fill((250,250,250))
+            allsprites.empty()
+            allsprites.add(player,goal)
+            CURRENTSCREEN = "platformer"
         pygame.display.flip()
 
 if __name__ == '__main__':
