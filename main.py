@@ -164,6 +164,7 @@ def main():
 
     someNode = mapNode()
     someNode.rect = someNode.rect.move(100,100)
+    someNode.changeOwner("enemy")
 
     goal.rect = goal.rect.move(200, 0)
 
@@ -188,7 +189,7 @@ def main():
                             curSelected = i
                             break
                         elif curSelected is not None:
-                            i.owner = "player"
+                            i.changeOwner("player")
                             curSelected.switchSelectedStatus()
                             curSelected = None
                             break
