@@ -28,28 +28,33 @@ class mapNode(pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
         self.selected = False
-        self.unselectedImage, self.rect = load_image("node.bmp")
-        self.selectedImage, self.rect = load_image("selectedNode.bmp")
-        self.images = [self.unselectedImage, self.selectedImage]
-        self.image = self.unselectedImage
-        self.mouseStatus = "unclicked"
+        self.owner = None
+        self.changeOwner(None)
+        #unselectedImage, self.rect = load_image("node.bmp")
+        #selectedImage, self.rect = load_image("selectedNode.bmp")
+        #self.images = [unselectedImage, selectedImage]
+        #self.image = self.images[self.selected]
 
-    def update(self):
-        "Check if selected, switch state accordingly"
-        for i in pygame.event.get():
-            if i.type == MOUSEBUTTONDOWN and self.mouseStatus is "unclicked":
-                if pygame.mouse.get_pressed()[0] == 1 and \
-                   self.rect.collidepoint(pygame.mouse.get_pos()):
-                    if not self.selected:
-                        self.selected = not self.selected
-                        self.image = self.images[self.selected]
-                        self.mouseStatus = "beingClicked"
-                    else:
-                        global CURRENTSCREEN
-                        CURRENTSCREEN = "switch"
-                        print "yo"
-            elif i.type == MOUSEBUTTONUP and self.mouseStatus is "beingClicked":
-                self.mouseStatus = "unclicked"
+    def switchSelectedStatus(self):
+        if self.selected:
+            self.selected = False
+        else:
+            self.selected = True
+        self.image = self.images[self.selected]
+
+    def changeOwner(self, newOwner):
+        if newOwner is "player":
+            unselectedImage, tempRect = load_image("playerNode.bmp")
+            selectedImage, tempRect = load_image("selectedPlayerNode.bmp")
+        elif newOwner is "enemy":
+            unselectedImage, tempRect = load_image("enemyNode.bmp")
+            selectedImage, tempRect = load_image("selectedEnemyNode.bmp")
+        else:
+            unselectedImage, self.rect = load_image("node.bmp")
+            selectedImage, self.rect = load_image("selectedNode.bmp")
+        self.images = [unselectedImage, selectedImage]
+        self.image = self.images[self.selected]
+        self.owner = newOwner
 
 class Player(pygame.sprite.Sprite):
     """Player object when platforming"""
@@ -157,11 +162,16 @@ def main():
 
     myNode.rect = myNode.rect.move(200,200)
 
+    someNode = mapNode()
+    someNode.rect = someNode.rect.move(100,100)
+
     goal.rect = goal.rect.move(200, 0)
 
     allsprites = pygame.sprite.Group(player, goal)
 
     clock = pygame.time.Clock()
+
+    curSelected = myNode
 
     while True:
         clock.tick(60)
@@ -170,8 +180,25 @@ def main():
                 pygame.quit()
             elif event.type == KEYDOWN and event.key == K_ESCAPE:
                 pygame.quit()
+            elif event.type == MOUSEBUTTONDOWN and CURRENTSCREEN is "map":
+                for i in allsprites.sprites():
+                    if i.rect.collidepoint(pygame.mouse.get_pos()):
+                        if i.owner is "player" and curSelected is None:
+                            i.switchSelectedStatus()
+                            curSelected = i
+                            break
+                        elif curSelected is not None:
+                            i.owner = "player"
+                            curSelected.switchSelectedStatus()
+                            curSelected = None
+                            break
+                        else:
+                            curSelected = i
+                            CURRENTSCREEN = "switch"
+                            break
+                            
+                            
         if CURRENTSCREEN is "platformer":
-            print "yoyo"
             screen.blit(background, (0,0))
             for i in platformListing:
                 screen.blit(i.visualPlatform, i.hitBox.topleft)
@@ -180,20 +207,21 @@ def main():
                 CURRENTSCREEN = "map"
                 player.rect = player.rect.move((-100, 100))
                 allsprites.empty()
-                allsprites.add(myNode)
+                allsprites.add(myNode, someNode)
+                curSelected.changeOwner("player")
+                curSelected = None
                 
-            allsprites.update()
-            allsprites.draw(screen)
         elif CURRENTSCREEN is "map":
             background.fill((0,0,0))
             screen.blit(background, (0,0))
-            allsprites.update()
-            allsprites.draw(screen)
+
         elif CURRENTSCREEN is "switch":
             background.fill((250,250,250))
             allsprites.empty()
             allsprites.add(player,goal)
             CURRENTSCREEN = "platformer"
+        allsprites.update()
+        allsprites.draw(screen)
         pygame.display.flip()
 
 if __name__ == '__main__':
