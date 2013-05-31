@@ -30,6 +30,7 @@ class mapNode(pygame.sprite.Sprite):
         self.selected = False
         self.owner = None
         self.changeOwner(None)
+        self.connections = []
 
     def switchSelectedStatus(self):
         if self.selected:
@@ -45,6 +46,12 @@ class mapNode(pygame.sprite.Sprite):
         for i in self.connections:
             pygame.draw.line(screen, (250,250,250), self.rect.center, i.rect.center)
 
+    def checkConnected(self, enemyNode):
+        if enemyNode in self.connections:
+            return True
+        else:
+            return False
+        
     def changeOwner(self, newOwner):
         if newOwner is "player":
             unselectedImage, tempRect = load_image("playerNode.bmp")
@@ -169,9 +176,17 @@ def main():
     someNode.rect = someNode.rect.move(100,100)
     someNode.changeOwner("enemy")
 
+    someOtherNode = mapNode()
+    someOtherNode.rect = someOtherNode.rect.move(300,100)
+    someOtherNode.changeOwner("enemy")
+
     myNode.setConnections([someNode])
 
+    someNode.setConnections([someOtherNode])
+
     goal.rect = goal.rect.move(200, 0)
+
+    nodes = pygame.sprite.Group(myNode, someNode, someOtherNode)
 
     allsprites = pygame.sprite.Group(player, goal)
 
@@ -194,10 +209,11 @@ def main():
                             curSelected = i
                             break
                         elif curSelected is not None:
-                            i.changeOwner("player")
-                            curSelected.switchSelectedStatus()
-                            curSelected = None
-                            break
+                            if curSelected.checkConnected(i):
+                                i.changeOwner("player")
+                                curSelected.switchSelectedStatus()
+                                curSelected = None
+                                break
                         else:
                             curSelected = i
                             CURRENTSCREEN = "switch"
@@ -213,14 +229,16 @@ def main():
                 CURRENTSCREEN = "map"
                 player.rect = player.rect.move((-100, 100))
                 allsprites.empty()
-                allsprites.add(myNode, someNode)
+                #allsprites.add(myNode, someNode)
+                allsprites.add(nodes)
                 curSelected.changeOwner("player")
                 curSelected = None
                 
         elif CURRENTSCREEN is "map":
             background.fill((0,0,0))
             screen.blit(background, (0,0))
-            myNode.drawConnections(screen)
+            for i in allsprites.sprites():
+                i.drawConnections(screen)
 
         elif CURRENTSCREEN is "switch":
             background.fill((250,250,250))
