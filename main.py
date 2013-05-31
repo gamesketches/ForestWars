@@ -30,10 +30,6 @@ class mapNode(pygame.sprite.Sprite):
         self.selected = False
         self.owner = None
         self.changeOwner(None)
-        #unselectedImage, self.rect = load_image("node.bmp")
-        #selectedImage, self.rect = load_image("selectedNode.bmp")
-        #self.images = [unselectedImage, selectedImage]
-        #self.image = self.images[self.selected]
 
     def switchSelectedStatus(self):
         if self.selected:
@@ -41,6 +37,13 @@ class mapNode(pygame.sprite.Sprite):
         else:
             self.selected = True
         self.image = self.images[self.selected]
+
+    def setConnections(self, connectionList):
+        self.connections = connectionList
+
+    def drawConnections(self, screen):
+        for i in self.connections:
+            pygame.draw.line(screen, (250,250,250), self.rect.center, i.rect.center)
 
     def changeOwner(self, newOwner):
         if newOwner is "player":
@@ -166,6 +169,8 @@ def main():
     someNode.rect = someNode.rect.move(100,100)
     someNode.changeOwner("enemy")
 
+    myNode.setConnections([someNode])
+
     goal.rect = goal.rect.move(200, 0)
 
     allsprites = pygame.sprite.Group(player, goal)
@@ -215,6 +220,7 @@ def main():
         elif CURRENTSCREEN is "map":
             background.fill((0,0,0))
             screen.blit(background, (0,0))
+            myNode.drawConnections(screen)
 
         elif CURRENTSCREEN is "switch":
             background.fill((250,250,250))
